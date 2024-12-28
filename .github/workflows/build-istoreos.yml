@@ -39,7 +39,7 @@ jobs:
           #- rk35xx
           - x86
         os:
-          - centos-latest
+          - ubuntu-latest
 #        include:
 #          - REPO_BRANCH: istoreos-22.03
 #            ARCHITECTURE: x86-alpha
