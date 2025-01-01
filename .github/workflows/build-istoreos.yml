@@ -27,7 +27,6 @@ env:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    #runs-on: self-hosted
     strategy:
       matrix:
         REPO_BRANCH:
@@ -35,15 +34,15 @@ jobs:
           - istoreos-22.03
           # - istoreos-23.05
         ARCHITECTURE:
-          #- rk33xx
-          #- rk35xx
+          - rk33xx
+          - rk35xx
           - x86
         os:
-          - ubuntu-20.04
-#        include:
-#          - REPO_BRANCH: istoreos-22.03
-#            ARCHITECTURE: x86-alpha
-#            os: ubuntu-20.04
+          - ubuntu-22.04
+        include:
+          - REPO_BRANCH: istoreos-23.05
+            ARCHITECTURE: x86-alpha
+            os: ubuntu-22.04
 
       fail-fast: false
 
@@ -88,32 +87,13 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /mnt/workdir
         sudo chown $USER:$GROUPS /mnt/workdir
-        
-    - name: 清理完成再次检查服务器配置
-      run: |
-        echo "若分配的服务器性能不足，务必及时取消，重新运行！"
-        echo -e "------------------------------- CPU信息 -------------------------------\n"
-        echo "CPU物理数量:$(cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l)"
-        echo -e "CPU核心及版本信息: $(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
-        echo -e "------------------------------- 内存信息 -------------------------------\n"
-        echo "已安装内存详细信息: "
-        sudo lshw -short -C memory | grep GiB
-        echo -e "\n"
-        echo -e "------------------------------- 磁盘信息 -------------------------------\n"
-        echo -e "磁盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
-        echo "------------------------------- 磁盘详情 -------------------------------\n"
-        df -Th
 
     - name: 克隆源码
-      working-directory: /mnt/workdir
+      working-directory: /workdir
       run: |
         df -hT $PWD
         git clone $REPO_URL -b ${{ matrix.REPO_BRANCH }} openwrt
-        ln -sf /mnt/workdir/openwrt $GITHUB_WORKSPACE/openwrt
-        
-    - name: 检查磁盘空间
-      if: (!cancelled())
-      run: df -hT
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
     - name: 缓存构建动作
       uses: klever1988/cachewrtbuild@main
@@ -136,10 +116,6 @@ jobs:
 
     - name: 安装 feeds
       run: cd openwrt && ./scripts/feeds install -a
-
-    - name: 检查磁盘空间
-      if: (!cancelled())
-      run: df -hT
 
     - name: 加载自定义配置
       env:
@@ -166,10 +142,6 @@ jobs:
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
-
-    - name: 检查磁盘空间
-      if: (!cancelled())
-      run: df -hT
 
     - name: 编译固件
       id: compile
@@ -222,7 +194,7 @@ jobs:
 
         ⏱️ 编译时间: $(date +"%Y年%m月%d日%H时%M分")
 
-        🌐 管理地址: 192.168.100.1
+        🌐 管理地址: 10.0.0.1
 
         👤 用户名: root
 
