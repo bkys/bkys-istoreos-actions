@@ -9,10 +9,10 @@ on:
         required: false
         default: 'false'
   schedule:
-   - cron: 0 16 * * *
+   - cron: 0 22 * * *
 
 env:
-  REPO_URL: https://github.com/istoreos/istoreos
+  REPO_URL: https://github.com/bkys/istoreos/
   # REPO_BRANCH: main
   FEEDS_CONF: feeds.conf
   CONFIG_FILE: .config
